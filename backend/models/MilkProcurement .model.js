@@ -20,3 +20,13 @@ const milkRateSchema = new mongoose.Schema(
   { timestamps: true }
 );
 export default mongoose.model("MilkRate", milkRateSchema);
+// id
+// vendorId
+// adminId
+// milkType
+// quantity
+// ratePerLiter
+// totalAmount
+// date
+// createdAt
+// updatedAt

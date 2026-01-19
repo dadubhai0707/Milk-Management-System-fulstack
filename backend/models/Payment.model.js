@@ -27,3 +27,9 @@ const paymentReminderSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("PaymentReminder", paymentReminderSchema);
+// id
+// invoiceId
+// amount
+// paymentMode
+// date
+// createdAt

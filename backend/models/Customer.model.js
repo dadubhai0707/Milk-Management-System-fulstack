@@ -13,24 +13,14 @@ const customerSchema = new mongoose.Schema(
       ref: "Admin",
       required: true
     },
-
-    sellerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Seller"
-    },
-
-    isAdminCustomer: { type: Boolean, default: false },
-
-    address: { type: String },
-
+    addressId: { type: String },
     milkType: {
       type: String,
       enum: ["cow", "buffalo"],
       required: true
     },
-
     defaultDailyQty: { type: Number, default: 1 },
-
+    rate: {},
     billingStartDate: { type: Date, required: true },
     lastBillingDate: { type: Date },
     nextBillingDate: { type: Date },

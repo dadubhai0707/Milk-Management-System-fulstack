@@ -15,3 +15,15 @@ const subscriptionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 export default mongoose.model("Subscription", subscriptionSchema);
+// id
+// name
+// maxCustomers
+// maxSellers
+// price
+// type
+// duration
+// features
+// isActive
+// createdAt
+// updatedAt
+// planType

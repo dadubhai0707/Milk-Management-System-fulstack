@@ -43,3 +43,15 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// User Model
+// 
+// id	id field
+// name	name field
+// mobile	mobile field
+// email	email field
+// password	password field
+// role	role field
+// isActive	isActive field
+// refreshKey	refreshKey field
+// createdAt	createdAt field
+// updatedAt	updatedAt field
