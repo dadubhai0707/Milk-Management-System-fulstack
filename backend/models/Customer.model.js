@@ -1,33 +1,73 @@
 import mongoose from "mongoose";
-
 const customerSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
+    {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            unique: true
+        },
 
-    adminId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
-      required: true
-    },
-    addressId: { type: String },
-    milkType: {
-      type: String,
-      enum: ["cow", "buffalo"],
-      required: true
-    },
-    defaultDailyQty: { type: Number, default: 1 },
-    rate: {},
-    billingStartDate: { type: Date, required: true },
-    lastBillingDate: { type: Date },
-    nextBillingDate: { type: Date },
+        ownerID: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Admin",
+            required: true,
+            index: true
+        },
+        addressId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Address",
+            required: true,
+            index: true
+        },
+        fullAddress: {
+            type: String,
+            required: true,
+        },
+        milkType: {
+            type: String,
+            enum: ["cow", "buffalo"],
+            required: true
+        },
 
-    isActive: { type: Boolean, default: true }
-  },
-  { timestamps: true }
+        dailyQty: {
+            type: Number,
+            default: 1,
+            min: 0
+        },
+
+        ratePerLiter: {
+            type: Number,
+            min: 0
+        },
+
+        billingStartDate: {
+            type: Date,
+            required: true
+        },
+
+        lastBillingDate: {
+            type: Date
+        },
+
+        nextBillingDate: {
+            type: Date,
+            index: true
+        },
+
+        pauseFrom: {
+            type: Date
+        },
+
+        pauseTo: {
+            type: Date
+        },
+
+        isActive: {
+            type: Boolean,
+            default: true
+        }
+    },
+    { timestamps: true }
 );
-
 export default mongoose.model("Customer", customerSchema);

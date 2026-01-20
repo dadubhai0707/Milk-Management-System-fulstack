@@ -1,57 +1,69 @@
+import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true // Faltu spaces hata dega
+      trim: true
     },
+
     mobile: {
       type: String,
       required: true,
       unique: true,
       trim: true
     },
+
     email: {
       type: String,
-      lowercase: true, // "ABC@GMAIL.COM" -> "abc@gmail.com"
+      lowercase: true,
       trim: true,
-      unique: true, // Do log same email use na kar sakein
-      sparse: true // Taaki agar kisi ka email null hai toh unique error na aaye
+      unique: true,
+      sparse: true
     },
+
     password: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
+
     role: {
       type: String,
       enum: ["super_admin", "admin", "seller", "customer"],
       default: "customer",
       required: true
     },
+
     refreshKey: {
       type: String,
       required: true
     },
+
     isActive: {
       type: Boolean,
       default: true
     },
+
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+
     profileImage: {
       type: String,
       default: ""
-    }
+    },
+    
+    lastLoginAt: {
+      type: Date
+    },
+
+    permissions: [
+      {
+        type: String
+      }
+    ]
   },
   { timestamps: true }
 );
-// User Model
-// 
-// id	id field
-// name	name field
-// mobile	mobile field
-// email	email field
-// password	password field
-// role	role field
-// isActive	isActive field
-// refreshKey	refreshKey field
-// createdAt	createdAt field
-// updatedAt	updatedAt field

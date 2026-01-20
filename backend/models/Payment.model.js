@@ -1,35 +1,71 @@
 import mongoose from "mongoose";
-
-const paymentReminderSchema = new mongoose.Schema(
+const paymentSchema = new mongoose.Schema(
   {
+    ownerID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      required: true,
+      index: true
+    },
+
     invoiceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Invoice",
-      required: true
+      required: true,
+      index: true
     },
 
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      required: true
+      required: true,
+      index: true
     },
 
-    reminderType: {
+    amount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    paymentMode: {
       type: String,
-      enum: ["first", "second", "final"],
+      enum: ["cash", "upi", "bank", "online"],
       required: true
     },
 
-    reminderDate: { type: Date, required: true },
-    sent: { type: Boolean, default: false }
+    // NEW (important)
+    gateway: {
+      type: String,
+      enum: ["razorpay", "cash", "upi", "bank"],
+      required: true
+    },
+
+    // Razorpay fields (only filled if gateway=razorpay)
+    razorpayOrderId: {
+      type: String
+    },
+
+    razorpayPaymentId: {
+      type: String
+    },
+
+    razorpaySignature: {
+      type: String
+    },
+
+    gatewayStatus: {
+      type: String,
+      enum: ["created", "authorized", "captured", "failed"],
+      default: "created"
+    },
+
+    paymentDate: {
+      type: Date,
+      required: true
+    }
   },
   { timestamps: true }
 );
 
-export default mongoose.model("PaymentReminder", paymentReminderSchema);
-// id
-// invoiceId
-// amount
-// paymentMode
-// date
-// createdAt
+export default mongoose.model("Payment", paymentSchema);

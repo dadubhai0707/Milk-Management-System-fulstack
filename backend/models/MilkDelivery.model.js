@@ -1,24 +1,31 @@
 import mongoose from "mongoose";
-
 const milkDeliverySchema = new mongoose.Schema(
   {
-    date: { type: Date, required: true },
+    date: {
+      type: Date,
+      required: true,
+      index: true
+    },
 
-    adminId: {
+    ownerID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
-      required: true
+      required: true,
+      index: true
     },
 
     sellerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Seller"
+      ref: "Seller",
+      required: true,
+      index: true
     },
 
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      required: true
+      required: true,
+      index: true
     },
 
     milkType: {
@@ -27,12 +34,29 @@ const milkDeliverySchema = new mongoose.Schema(
       required: true
     },
 
-    milkQty: { type: Number, required: true },
-    ratePerLiter: { type: Number, required: true },
+    milkQty: {
+      type: Number,
+      required: true,
+      min: 0
+    },
 
-    delivered: { type: Boolean, default: true }
+    status: {
+      type: String,
+      enum: ["delivered", "skipped", "missed"],
+      default: "delivered"
+    },
+
+    isPausedDay: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
+);
+
+milkDeliverySchema.index(
+  { customerId: 1, date: 1 },
+  { unique: true }
 );
 
 export default mongoose.model("MilkDelivery", milkDeliverySchema);
