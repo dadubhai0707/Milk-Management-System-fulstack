@@ -2,7 +2,7 @@ const express = require("express")
 require("dotenv").config()
 const cors = require("cors")
 const cookiePars = require("cookie-parser")
-const userRoute = require("./routes/userRoute")
+const authRoute = require("./routes/auth/auth.route")
 const app = express()
 
 app.use(cors({
@@ -13,6 +13,5 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookiePars())
-app.use("/api/auth", userRoute)
-
+app.use("/api/auth", authRoute)
 module.exports = app
