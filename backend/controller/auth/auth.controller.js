@@ -2,7 +2,6 @@ const User = require("../../models/User.model");
 const ApiResponse = require("../../utils/apiResponse");
 const ApiError = require("../../utils/apiError");
 const asyncHandler = require("../../utils/asyncHandle");
-
 // ================= REGISTER =================
 const Register = asyncHandler(async (req, res) => {
     const { name, mobile, password } = req.body;
@@ -32,69 +31,98 @@ const Register = asyncHandler(async (req, res) => {
     );
 });
 
-
 // ================= LOGIN =================
 const Login = asyncHandler(async (req, res) => {
     const { mobile, password } = req.body;
 
+    // 1️⃣ Validate input
     if (!mobile || !password) {
-        throw new ApiError(400, "Mobile and password required");
+        throw new ApiError(400, "Mobile and password are required");
     }
 
+    // 2️⃣ Find user
     const user = await User.findOne({ mobile }).select("+password");
     if (!user) {
         throw new ApiError(404, "User not found");
     }
 
+    // 3️⃣ Account status
     if (!user.isActive || user.isBlocked) {
-        throw new ApiError(403, "Account disabled or blocked");
+        throw new ApiError(403, "Account is disabled or blocked");
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password);
-    if (!isPasswordValid) {
-        throw new ApiError(401, "Invalid credentials");
+    // 4️⃣ Password check
+    const isMatch = await user.isPasswordCorrect(password);
+    if (!isMatch) {
+        throw new ApiError(401, "Invalid mobile or password");
     }
 
+    // 5️⃣ Generate tokens
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
+    // 6️⃣ Save refresh token
     user.refreshToken = refreshToken;
     user.lastLoginAt = new Date();
     await user.save({ validateBeforeSave: false });
 
+    // 7️⃣ Cookie options
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict"
+        sameSite: "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000
     };
 
+    // 8️⃣ Response (JSON)
     return res
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions)
         .status(200)
-        .json(new ApiResponse(200, {
-            user: {
-                _id: user._id,
-                name: user.name,
-                mobile: user.mobile,
-                role: user.role
-            }
-        }, "Login successful"));
+        .json({
+            success: true,
+            message: "Login successful",
+            data: {
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    mobile: user.mobile,
+                    role: user.role
+                }
+            },
+            accessToken,
+            refreshToken
+        });
 });
 
 
 // ================= LOGOUT =================
 const Logout = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(req.user._id, {
-        $unset: { refreshToken: 1 }
-    });
+    // 1️⃣ refreshToken kaha se aaya?
+    const refreshToken =
+        req.cookies?.refreshToken || req.body?.refreshToken;
 
-    return res
-        .clearCookie("accessToken")
-        .clearCookie("refreshToken")
-        .status(200)
-        .json(new ApiResponse(200, {}, "Logout successful"));
+    if (!refreshToken) {
+        throw new ApiError(400, "Refresh token required");
+    }
+
+    // 2️⃣ DB se refreshToken remove
+    await User.findOneAndUpdate(
+        { refreshToken },
+        { $unset: { refreshToken: 1 } }
+    );
+
+    // 3️⃣ Web ke liye cookies clear
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    // 4️⃣ JSON response
+    return res.status(200).json({
+        success: true,
+        message: "Logged out successfully"
+    });
 });
+
 
 module.exports = {
     Register,

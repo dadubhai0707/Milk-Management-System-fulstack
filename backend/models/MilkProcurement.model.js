@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const milkProcurementSchema = new mongoose.Schema(
   {
     vendorId: {
@@ -50,15 +49,10 @@ const milkProcurementSchema = new mongoose.Schema(
       type: String,
       trim: true
     },
-    isActive: {
-      type: Boolean,
-      default: true
-    }
   },
   { timestamps: true }
 );
 
-// Prevent duplicate entry per vendor per day
 milkProcurementSchema.index(
   { vendorId: 1, date: 1 },
   { unique: true }

@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema(
       trim: true
     },
 
-
     otp: {
       type: String
     },

@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+
 const addressSchema = new mongoose.Schema(
   {
-    ownerID: {
+    ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "User", // owner user
       required: true,
       index: true
     },
@@ -32,4 +33,5 @@ const addressSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Address", addressSchema);
+const Address = mongoose.model("Address", addressSchema)
+module.exports = Address

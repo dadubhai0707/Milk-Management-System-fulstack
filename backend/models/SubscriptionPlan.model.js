@@ -50,14 +50,24 @@ const subscriptionPlan = new mongoose.Schema(
         trim: true
       }
     ],
-
     // Plan active / inactive
     isActive: {
       type: Boolean,
       default: true
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("SubscriptionPlan", subscriptionPlan);
+const SubscriptionPlan = mongoose.model("SubscriptionPlan", subscriptionPlan);
+module.exports = SubscriptionPlan

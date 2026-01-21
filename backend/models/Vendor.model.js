@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const vendorSchema = new mongoose.Schema(
   {
     name: {
@@ -19,9 +18,9 @@ const vendorSchema = new mongoose.Schema(
       trim: true
     },
 
-    ownerID: {
+    ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "User",
       required: true,
       index: true
     },
@@ -33,5 +32,5 @@ const vendorSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-export default mongoose.model("Vendor", vendorSchema);
+const Vendor = mongoose.model("Vendor", vendorSchema);
+module.exports = Vendor

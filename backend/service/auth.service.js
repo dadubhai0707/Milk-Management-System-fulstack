@@ -43,7 +43,6 @@ export const generateTokens = async (userId) => {
 /* ===========================
    OTP SERVICES
 =========================== */
-
 export const generateOtp = () => {
     return otpGenerator.generate(6, {
         digits: true,

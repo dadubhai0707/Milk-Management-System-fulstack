@@ -37,15 +37,28 @@ const ownerSchema = new mongoose.Schema(
     },
 
     // Active subscription reference
-    subscriptionId: {
+    planId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "AdminSubscription"
+      ref: "SubscriptionPlan",
+      required: true
     },
-
+    paymentGateway: {
+      type: String,
+      enum: ["razorpay"],
+      default: "razorpay"
+    },
+    razorpayOrderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String,
+    amount: {
+      type: Number,
+      required: true
+    },
     isActive: {
       type: Boolean,
       default: true
     },
+
 
     isSuspended: {
       type: Boolean,
