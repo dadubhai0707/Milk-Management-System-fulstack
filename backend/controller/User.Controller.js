@@ -1,5 +1,5 @@
 const ApiError = require("../utils/apiError");
-const ApiResponse = require("../utils/ApiResponse");
+const ApiResponse = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandle");
 
 const getUser = asyncHandler(async (req, res) => {

@@ -1,78 +1,103 @@
-const User = require("../../model/user.model");
+const User = require("../../models/User.model");
 const ApiResponse = require("../../utils/apiResponse");
 const ApiError = require("../../utils/apiError");
 const asyncHandler = require("../../utils/asyncHandle");
-const { validationResult } = require("express-validator");
-const { Save, GenerateAndAccessToken } = require("../../service/auth.service");
+
+// ================= REGISTER =================
 const Register = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiError(400, "Validation Error",
-            errors.array()
-        ))
-    }
-    const { FullName, Email, Phone, Password, Gender, Address } = req.body;
+    const { name, mobile, password } = req.body;
 
-    const alreadyUser = await User.findOne({ Email });
-    if (alreadyUser) {
-        return res.status(409).json(new ApiError(409, "Email already exists", [
-            { msg: "This email is already registered", param: "Email" }
-        ]))
+    if (!name || !mobile || !password) {
+        throw new ApiError(400, "All fields are required");
     }
-    const savedUser = await Save({ FullName, Email, Phone, Password, Gender, Address });
 
-    return res
-        .status(201)
-        .json(new ApiResponse(201, savedUser, "User registered successfully"));
+    const existingUser = await User.findOne({ mobile });
+    if (existingUser) {
+        throw new ApiError(409, "Mobile number already registered");
+    }
+
+    const user = await User.create({
+        name,
+        mobile,
+        password
+    });
+
+    return res.status(201).json(
+        new ApiResponse(201, {
+            _id: user._id,
+            name: user.name,
+            mobile: user.mobile,
+            role: user.role
+        }, "User registered successfully")
+    );
 });
 
 
-
+// ================= LOGIN =================
 const Login = asyncHandler(async (req, res) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiError(400, "Validation Error",
-            errors.array()
-        ))
-    }
-    const { Email, Password } = req.body;
-    const user = await User.findOne({ Email }).select("+Password")
+    const { mobile, password } = req.body;
 
+    if (!mobile || !password) {
+        throw new ApiError(400, "Mobile and password required");
+    }
+
+    const user = await User.findOne({ mobile }).select("+password");
     if (!user) {
-        return res.status(404).json(new ApiError(404, "User Does Not Exist ", "User Does Not Exist "))
+        throw new ApiError(404, "User not found");
     }
 
-    const checkPassword = await user.isPasswordCorrect(Password)
-    if (!checkPassword) {
-        return res.status(401).json(new ApiError(401, "User Does Not Exist", "In Valid Password"))
+    if (!user.isActive || user.isBlocked) {
+        throw new ApiError(403, "Account disabled or blocked");
     }
 
-    const { accessToken, refreshToken, error } = await GenerateAndAccessToken(user._id)
-    if (error != null) {
-        return res.status(404).json(new ApiError(404, "unAuthorized Accessed ", "unAuthorized Accessed "))
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid credentials");
     }
 
-    const loggedInUser = await User.findById(user._id).select("-RefreshToken")
-    const option = {
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    const cookieOptions = {
         httpOnly: true,
-        secure: true,
-        sameSite: "Lax"
-    }
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict"
+    };
 
     return res
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .status(200)
-        .cookie("AccessToken", accessToken, option)
-        .cookie("RefreshToken", refreshToken, option)
-        .json(new ApiResponse(
-            200,
-            {
-                user: loggedInUser, accessToken, refreshToken
-            },
-            "User logged In Successfully"
-        ))
+        .json(new ApiResponse(200, {
+            user: {
+                _id: user._id,
+                name: user.name,
+                mobile: user.mobile,
+                role: user.role
+            }
+        }, "Login successful"));
+});
+
+
+// ================= LOGOUT =================
+const Logout = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id, {
+        $unset: { refreshToken: 1 }
+    });
+
+    return res
+        .clearCookie("accessToken")
+        .clearCookie("refreshToken")
+        .status(200)
+        .json(new ApiResponse(200, {}, "Logout successful"));
 });
 
 module.exports = {
     Register,
-    Login
-};
+    Login,
+    Logout,
+}
