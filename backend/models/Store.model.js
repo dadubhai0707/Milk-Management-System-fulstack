@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const ownerSchema = new mongoose.Schema(
+const storeSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -59,7 +59,6 @@ const ownerSchema = new mongoose.Schema(
       default: true
     },
 
-
     isSuspended: {
       type: Boolean,
       default: false
@@ -67,4 +66,4 @@ const ownerSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-export default mongoose.model("Owner", ownerSchema);
+export default mongoose.model("Store", storeSchema);

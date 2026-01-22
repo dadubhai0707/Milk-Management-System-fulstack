@@ -1,0 +1,773 @@
+1. D:\Milk-Management-System-NewS\backend\models\User.model.js
+const mongoose = require("mongoose")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    mobile: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true
+    },
+
+    otp: {
+      type: String
+    },
+
+    otpExpiresAt: {
+      type: Date
+    },
+
+    isMobileVerified: {
+      type: Boolean,
+      default: false
+    },
+
+    password: {
+      type: String,
+      select: false
+    },
+
+    role: {
+      type: String,
+      enum: ["super_admin", "Owner", "seller", "customer"],
+      default: "customer",
+      required: true
+    },
+
+    refreshToken: {
+      type: String
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+
+    profileImage: {
+      type: String,
+      default: ""
+    },
+
+    lastLoginAt: {
+      type: Date
+    }
+  },
+  { timestamps: true }
+);
+
+/// 🔐 Password hash
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password") || !this.password) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+/// 🔑 Password check
+userSchema.methods.isPasswordCorrect = async function (password) {
+  if (!this.password) return false;
+  return await bcrypt.compare(password, this.password);
+};
+
+/// 🔑 Access token
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    { _id: this._id, role: this.role },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+  );
+};
+
+/// 🔁 Refresh token
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    { _id: this._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+  );
+};
+
+const User = mongoose.model("User", userSchema)
+module.exports = User
+
+2.  D:\Milk-Management-System-NewS\backend\models\SubscriptionPlan.model.js
+const mongoose = require("mongoose");
+
+const subscriptionPlan = new mongoose.Schema(
+  {
+    // Plan name (Basic, Pro, Enterprise)
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    // Max customers admin can register
+    maxCustomers: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    // Max sellers admin can register
+    maxSellers: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    // Plan price
+    price: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    // Monthly / Yearly / Trial
+    planType: {
+      type: String,
+      enum: ["monthly", "yearly", "trial"],
+      required: true
+    },
+
+    // Duration in days (30, 365, 7 etc.)
+    duration: {
+      type: Number,
+      required: true
+    },
+
+    // Feature list (string array)
+    features: [
+      {
+        type: String,
+        trim: true
+      }
+    ],
+    // Plan active / inactive
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  },
+  { timestamps: true }
+);
+
+const SubscriptionPlan = mongoose.model("SubscriptionPlan", subscriptionPlan);
+module.exports = SubscriptionPlan
+D:\Milk-Management-System-NewS\backend\models\Store.model.js
+import mongoose from "mongoose";
+const storeSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true
+    },
+
+    shopName: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    shopAddress: {
+      type: String,
+      trim: true
+    },
+
+    contactNumber: {
+      type: String,
+      trim: true
+    },
+
+    milkTypes: [
+      {
+        type: String,
+        enum: ["cow", "buffalo"]
+      }
+    ],
+
+    defaultMilkRate: {
+      type: Number,
+      min: 0
+    },
+
+    // Active subscription reference
+    planId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+      required: true
+    },
+    paymentGateway: {
+      type: String,
+      enum: ["razorpay"],
+      default: "razorpay"
+    },
+    razorpayOrderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String,
+    amount: {
+      type: Number,
+      required: true
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+
+    isSuspended: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+);
+export default mongoose.model("Store", storeSchema);
+
+D:\Milk-Management-System-NewS\backend\models\Address.model.js
+const mongoose = require("mongoose");
+
+const addressSchema = new mongoose.Schema(
+  {
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store", // owner user
+      required: true,
+      index: true
+    },
+
+    areaName: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    city: {
+      type: String,
+      trim: true
+    },
+
+    pincode: {
+      type: String,
+      trim: true
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true
+    }
+  },
+  { timestamps: true }
+);
+
+const Address = mongoose.model("Address", addressSchema)
+module.exports = Address
+D:\Milk-Management-System-NewS\backend\models\Vendor.model.js
+import mongoose from "mongoose";
+const vendorSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    mobile: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    address: {
+      type: String,
+      trim: true
+    },
+
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true
+    }
+  },
+  { timestamps: true }
+);
+const Vendor = mongoose.model("Vendor", vendorSchema);
+module.exports = Vendor
+
+D:\Milk-Management-System-NewS\backend\models\MilkProcurement.model.js
+import mongoose from "mongoose";
+const milkProcurementSchema = new mongoose.Schema(
+  {
+    vendorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vendor",
+      required: true,
+      index: true
+    },
+
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    milkTypesSupplied: [
+      {
+        type: String,
+        enum: ["cow", "buffalo"]
+      }
+    ],
+
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    ratePerLiter: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    date: {
+      type: Date,
+      required: true,
+      index: true
+    },
+
+    notes: {
+      type: String,
+      trim: true
+    },
+  },
+  { timestamps: true }
+);
+
+milkProcurementSchema.index(
+  { vendorId: 1, date: 1 },
+  { unique: true }
+);
+
+export default mongoose.model("MilkProcurement", milkProcurementSchema);
+
+D:\Milk-Management-System-NewS\backend\models\Seller.model.js
+
+import mongoose from "mongoose";
+
+const sellerSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true
+    },
+
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    // Seller can cover multiple areas
+    assignedAreaIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address"
+      }
+    ],
+
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Seller", sellerSchema);
+
+D:\Milk-Management-System-NewS\backend\models\Customer.model.js
+
+import mongoose from "mongoose";
+const customerSchema = new mongoose.Schema(
+    {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            unique: true
+        },
+
+        storeID: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Store",
+            required: true,
+            index: true
+        },
+        addressId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Address",
+            required: true,
+            index: true
+        },
+        fullAddress: {
+            type: String,
+            required: true,
+        },
+        milkType: {
+            type: String,
+            enum: ["cow", "buffalo"],
+            required: true
+        },
+
+        dailyQty: {
+            type: Number,
+            default: 1,
+            min: 0
+        },
+
+        ratePerLiter: {
+            type: Number,
+            min: 0
+        },
+
+        billingStartDate: {
+            type: Date,
+            required: true
+        },
+
+        lastBillingDate: {
+            type: Date
+        },
+
+        nextBillingDate: {
+            type: Date,
+            index: true
+        },
+
+        pauseFrom: {
+            type: Date
+        },
+
+        pauseTo: {
+            type: Date
+        },
+
+        isActive: {
+            type: Boolean,
+            default: true
+        }
+    },
+    { timestamps: true }
+);
+export default mongoose.model("Customer", customerSchema);
+
+D:\Milk-Management-System-NewS\backend\models\MilkAssing.model.js
+import mongoose from "mongoose";
+
+const milkAssignSchema = new mongoose.Schema(
+    {
+        storeID: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Store",
+            required: true,
+            index: true
+        },
+
+        sellerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Seller",
+            required: true,
+            index: true
+        },
+
+        date: {
+            type: Date,
+            required: true,
+            index: true
+        },
+
+        milkType: {
+            type: String,
+            enum: ["cow", "buffalo"],
+            required: true
+        },
+
+        quantity: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }
+    },
+    { timestamps: true }
+);
+
+/**
+ * One seller → one milkType → one day → one record
+ */
+milkAssignSchema.index(
+    { adminId: 1, sellerId: 1, milkType: 1, date: 1 },
+    { unique: true }
+);
+
+export default mongoose.model("MilkAssign", milkAssignSchema);
+
+D:\Milk-Management-System-NewS\backend\models\MilkDelivery.model.js
+import mongoose from "mongoose";
+const milkDeliverySchema = new mongoose.Schema(
+  {
+    date: {
+      type: Date,
+      required: true,
+      index: true
+    },
+
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
+      required: true,
+      index: true
+    },
+
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+      index: true
+    },
+
+    milkType: {
+      type: String,
+      enum: ["cow", "buffalo"],
+      required: true
+    },
+
+    milkQty: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    status: {
+      type: String,
+      enum: ["delivered", "skipped", "missed"],
+      default: "delivered"
+    },
+
+    isPausedDay: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+);
+
+milkDeliverySchema.index(
+  { customerId: 1, date: 1 },
+  { unique: true }
+);
+
+export default mongoose.model("MilkDelivery", milkDeliverySchema);
+
+D:\Milk-Management-System-NewS\backend\models\Invoice.model.js
+import mongoose from "mongoose";
+
+const invoiceSchema = new mongoose.Schema(
+  {
+    invoiceNumber: {
+      type: String,
+      unique: true
+    },
+
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+      index: true
+    },
+
+    periodStart: {
+      type: Date,
+      required: true
+    },
+
+    periodEnd: {
+      type: Date,
+      required: true
+    },
+
+    totalMilkQty: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    paidAmount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    status: {
+      type: String,
+      enum: ["unpaid", "partial", "paid"],
+      default: "unpaid"
+    },
+
+    isDownloaded: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+);
+
+
+
+export default mongoose.model("Invoice", invoiceSchema);
+
+
+D:\Milk-Management-System-NewS\backend\models\Payment.model.js
+import mongoose from "mongoose";
+const paymentSchema = new mongoose.Schema(
+  {
+    storeID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true
+    },
+
+    invoiceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Invoice",
+      required: true,
+      index: true
+    },
+
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+      index: true
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    paymentMode: {
+      type: String,
+      enum: ["cash", "upi", "bank", "online"],
+      required: true
+    },
+
+    // NEW (important)
+    gateway: {
+      type: String,
+      enum: ["razorpay", "cash", "upi", "bank"],
+      required: true
+    },
+
+    // Razorpay fields (only filled if gateway=razorpay)
+    razorpayOrderId: {
+      type: String
+    },
+
+    razorpayPaymentId: {
+      type: String
+    },
+
+    razorpaySignature: {
+      type: String
+    },
+
+    gatewayStatus: {
+      type: String,
+      enum: ["created", "authorized", "captured", "failed"],
+      default: "created"
+    },
+
+    paymentDate: {
+      type: Date,
+      required: true
+    }
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Payment", paymentSchema);
+:- understand this all model then i will give you many queris
+deko me ek milk managment app bana rha hu jisme 4 user hoge supper admin , owner yane store ya shop ka malik , seller jo customer ke gar gar jake dudh denga jo owner ne assing keya hoga , customer ke jo service lenga store or owner se 
+supper admin :- ye plan bnayenga or store ke aprove karenga 
+owner := jo shop karendega plan leke , vendor ko manage karenga ke kaha se duda lenga , apne area address banayenaga , usme customer ko define karega ke ye ye area ke ye ye customer  , seller ko manage karenga ke milk assing karenga  or customer ,vendor,seller ye log inke under ayenge ye sab ye owner register karvangaa matlab ke first time to sabe customer hoge lakin jab owner register karvata he  kese user ko chaye wo seller ke roup me or customer ke roup me to fir wo user ke andar se automatice type update ho  jayanga as it agar owner plan karedta he to wo be badal jaynga type kaya ye sakaya he jo mane socha he 
+seller :- ye log owner ke under ayange shop ke under ayange ok , ye log seller ne jo milk assing keya he usko bechnee jana he jo customer register he shop se daily jana he or apne phone me jase jase milk customer ko denga wase wase MilkDelivery me update honga or ye shop wala dek sakenga 
+
+customer:- ye log shop ke under honge or milk unke garpe seller denee ayangee 

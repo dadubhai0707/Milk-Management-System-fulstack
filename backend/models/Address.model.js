@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema(
   {
-    ownerId: {
+    storeID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // owner user
+      ref: "Store", // owner user
       required: true,
       index: true
     },

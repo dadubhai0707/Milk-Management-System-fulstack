@@ -4,15 +4,13 @@ const cors = require("cors")
 const cookiePars = require("cookie-parser")
 // routes 
 const authRoute = require("./routes/auth/auth.route")
-const ownerAddressRoute = require("./routes/compneyOwner/address.route");
 const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookiePars())
 app.use("/api/auth", authRoute)
-app.use("/api/owner/addresses", ownerAddressRoute);
-// 🚨 GLOBAL ERROR HANDLER (MANDATORY)
+
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
 

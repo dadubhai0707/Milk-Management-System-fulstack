@@ -18,9 +18,9 @@ const vendorSchema = new mongoose.Schema(
       trim: true
     },
 
-    ownerId: {
+    storeID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Store",
       required: true,
       index: true
     },

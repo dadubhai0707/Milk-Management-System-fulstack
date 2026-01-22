@@ -7,9 +7,9 @@ const invoiceSchema = new mongoose.Schema(
       unique: true
     },
 
-    ownerID: {
+    storeID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "Store",
       required: true,
       index: true
     },

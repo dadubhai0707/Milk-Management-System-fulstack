@@ -8,9 +8,9 @@ const milkProcurementSchema = new mongoose.Schema(
       index: true
     },
 
-    ownerID: {
+    storeID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "Store",
       required: true,
       index: true
     },
@@ -45,6 +45,7 @@ const milkProcurementSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+
     notes: {
       type: String,
       trim: true

@@ -124,6 +124,31 @@ const Logout = asyncHandler(async (req, res) => {
 });
 
 
+// ================= REFRESH TOKEN =================
+exports.RefreshToken = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        throw new ApiError(401, "Refresh token required");
+    }
+
+    const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decoded._id);
+    if (!user || user.refreshToken !== refreshToken) {
+        throw new ApiError(401, "Invalid refresh token");
+    }
+
+    const newAccessToken = user.generateAccessToken();
+
+    res.status(200).json({
+        success: true,
+        accessToken: newAccessToken
+    });
+});
 module.exports = {
     Register,
     Login,

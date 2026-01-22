@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 const paymentSchema = new mongoose.Schema(
   {
-    ownerID: {
+    storeID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "Store",
       required: true,
       index: true
     },
