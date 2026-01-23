@@ -3,7 +3,7 @@ import AuthNavigator from "./AuthNavigator";
 import BottomTabs from "./BottomTabs";
 const Stack = createNativeStackNavigator();
 export default function RootNavigator() {
-    const isLoggedIn = true;        // Redux / Context se ayega
+    const isLoggedIn = false;        // Redux / Context se ayega
     const role = "admin";          // admin | seller | customer
 
     return (

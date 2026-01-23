@@ -9,25 +9,11 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookiePars())
-// const razorpay = new Razorpay({
-//     key_id: 'rzp_test_S7CCZX41AkX6i4', // Apni Key ID yahan dalein
-//     key_secret: 'o5W3p4Mg1xPd566Ij9lsDzql', // Apna Secret yahan dalein
-// });
-// ----------------------------
-// all router 
-// ----------------------------
-// -----------
-//  auth apis
-// -----------
-app.use("/api/auth", require("./routes/auth/auth.route"))
-// -----------
-//  superAdmin apis
-// -----------
-app.use("/api/super-admin", require("./routes/supperAdmin/index.route"));
+//  route main apis
+app.use("/api", require("./routes/main.route"));
 // ----------------------------------
 // common response handle
 // ----------------------------------
-
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
 
