@@ -1,15 +1,9 @@
-import React from 'react';
-import {
-  Text,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import RootNavigator from "./src/navigation/RootNavigator";
 export default function App() {
   return (
-    <SafeAreaView >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text >hello world</Text>
-      </ScrollView>
-    </SafeAreaView>
+    <NavigationContainer>
+      <RootNavigator />
+    </NavigationContainer>
   );
 }
