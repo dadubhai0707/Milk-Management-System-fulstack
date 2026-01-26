@@ -132,32 +132,42 @@ const Logout = asyncHandler(async (req, res) => {
 
 
 // ================= REFRESH TOKEN =================
-exports.RefreshToken = asyncHandler(async (req, res) => {
-    const { refreshToken } = req.body;
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.cookies || req.body;
 
     if (!refreshToken) {
-        throw new ApiError(401, "Refresh token required");
+        throw new ApiError(401, "Refresh token missing");
     }
 
-    const decoded = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET
-    );
+    // verify refresh token
+    let decoded;
+    try {
+        decoded = jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+    } catch (err) {
+        throw new ApiError(403, "Invalid refresh token");
+    }
 
     const user = await User.findById(decoded._id);
     if (!user || user.refreshToken !== refreshToken) {
-        throw new ApiError(401, "Invalid refresh token");
+        throw new ApiError(403, "Refresh token not valid");
     }
 
+    // generate new access token
     const newAccessToken = user.generateAccessToken();
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
-        accessToken: newAccessToken
+        accessToken: newAccessToken,
+        message: "Access token refreshed"
     });
 });
+
 module.exports = {
     Register,
     Login,
     Logout,
+    refreshAccessToken,
 }

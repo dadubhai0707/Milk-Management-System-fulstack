@@ -16,7 +16,7 @@ import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../redux/thunk/auth/authThunk.js";
 import Toast from "react-native-toast-message";
-
+import { saveTokens } from "../../utils/tokenStorage.js";
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsloading] = useState(false)
@@ -36,8 +36,9 @@ export default function Login() {
                     text1: 'LoggedIn',
                     text2: res.message
                 });
+                await saveTokens(res.accessToken, res.refreshToken);
                 await resetForm();
-                await navigation.navigate('Login')
+                // await setIsloading(false);
             } catch (err) {
                 console.log(err)
                 Toast.show({

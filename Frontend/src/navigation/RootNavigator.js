@@ -1,12 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useSelector } from "react-redux";
 import AuthNavigator from "./AuthNavigator";
 import UserNavigation from "./UserNavigation";
 
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
-    const isLoggedIn = false;      // later Redux
-    const role = "admin";        // admin | seller | customer
+    const { isLoggedIn, role } = useSelector(state => state.auth);
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
