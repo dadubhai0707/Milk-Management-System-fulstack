@@ -4,9 +4,9 @@ const ApiError = require("../../utils/apiError");
 const asyncHandler = require("../../utils/asyncHandle");
 // ================= REGISTER =================
 const Register = asyncHandler(async (req, res) => {
-    const { name, mobile, password } = req.body;
+    const { name, mobile, password, address } = req.body;
 
-    if (!name || !mobile || !password) {
+    if (!name || !mobile || !password || !address) {
         throw new ApiError(400, "All fields are required");
     }
 
@@ -18,16 +18,24 @@ const Register = asyncHandler(async (req, res) => {
     const user = await User.create({
         name,
         mobile,
-        password
+        password,
+        address
     });
 
     return res.status(201).json(
-        new ApiResponse(201, {
-            _id: user._id,
-            name: user.name,
-            mobile: user.mobile,
-            role: user.role
-        }, "User registered successfully")
+        new ApiResponse(
+            201,
+            {
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    mobile: user.mobile,
+                    role: user.role,
+                    isMobileVerified: user.isMobileVerified
+                },
+            },
+            "User registered successfully"
+        )
     );
 });
 
@@ -94,7 +102,6 @@ const Login = asyncHandler(async (req, res) => {
             refreshToken
         });
 });
-
 
 // ================= LOGOUT =================
 const Logout = asyncHandler(async (req, res) => {
