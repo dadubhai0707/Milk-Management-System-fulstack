@@ -1,10 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AuthNavigator from "./AuthNavigator";
-import BottomTabs from "./BottomTabs";
+import UserNavigation from "./UserNavigation";
+
 const Stack = createNativeStackNavigator();
+
 export default function RootNavigator() {
-    const isLoggedIn = false;        // Redux / Context se ayega
-    const role = "admin";          // admin | seller | customer
+    const isLoggedIn = false;      // later Redux
+    const role = "admin";        // admin | seller | customer
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -12,8 +14,8 @@ export default function RootNavigator() {
                 <Stack.Screen name="Auth" component={AuthNavigator} />
             ) : (
                 <Stack.Screen
-                    name="MainTabs"
-                    component={BottomTabs}
+                    name="User"
+                    component={UserNavigation}
                     initialParams={{ role }}
                 />
             )}
