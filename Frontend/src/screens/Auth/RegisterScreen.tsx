@@ -39,9 +39,8 @@ export default function Register() {
                     text1: 'Registered',
                     text2: res.message
                 });
-                console.log(res)
-                resetForm();
-
+                await resetForm();
+                await navigation.navigate('Login')
             } catch (err) {
                 console.log(err)
                 Toast.show({

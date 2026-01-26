@@ -12,12 +12,44 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import styles from "./authCss.js"
 import { useNavigation } from "@react-navigation/native";
-
+import { useFormik } from "formik";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../../redux/thunk/auth/authThunk.js";
+import Toast from "react-native-toast-message";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isLoading, setIsloading] = useState(false)
     const navigation = useNavigation();
+    const dispatch = useDispatch<any>();
+    const LoginForm = useFormik({
+        initialValues: {
+            mobile: "",
+            password: "",
+        },
+        onSubmit: async (values, { resetForm }) => {
+            try {
+                setIsloading(true);
+                const res = await dispatch(loginUser(values)).unwrap();
+                Toast.show({
+                    type: 'success',
+                    text1: 'LoggedIn',
+                    text2: res.message
+                });
+                await resetForm();
+                await navigation.navigate('Login')
+            } catch (err) {
+                console.log(err)
+                Toast.show({
+                    type: 'error',
+                    text1: 'Warn',
+                    text2: err
+                });
+            } finally {
+                setIsloading(false);
+            }
+        }
+    })
 
     return (
         <KeyboardAvoidingView
@@ -45,6 +77,9 @@ export default function Login() {
                         keyboardType="number-pad"
                         maxLength={10}
                         style={styles.inputFlex}
+                        value={LoginForm.values.mobile}
+                        onChangeText={LoginForm.handleChange("mobile")}
+                        onBlur={LoginForm.handleBlur("mobile")}
                     />
                 </View>
 
@@ -56,6 +91,8 @@ export default function Login() {
                         placeholderTextColor="#9ca3af"
                         secureTextEntry={!showPassword}
                         style={styles.inputFlex}
+                        value={LoginForm.values.password}
+                        onChangeText={LoginForm.handleChange("password")}
                     />
                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                         <Ionicons
@@ -66,30 +103,20 @@ export default function Login() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Confirm Password */}
-                <Text style={styles.label}>Confirm Password</Text>
-                <View style={styles.inputBoxRow}>
-                    <TextInput
-                        placeholder="Confirm password"
-                        placeholderTextColor="#9ca3af"
-                        secureTextEntry={!showConfirmPassword}
-                        style={styles.inputFlex}
-                    />
-                    <TouchableOpacity
-                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                        <Ionicons
-                            name={showConfirmPassword ? "eye" : "eye-off"}
-                            size={20}
-                            color="#6b7280"
-                        />
-                    </TouchableOpacity>
-                </View>
 
                 {/* Login Button */}
-                <TouchableOpacity style={styles.loginButton}>
+                <TouchableOpacity
+                    style={styles.loginButton}
+                    onPress={LoginForm.handleSubmit}
+                >
                     <Text style={styles.loginText}>
-                        Login <Ionicons name="arrow-forward" size={16} />
+                        {
+                            isLoading
+                                ?
+                                "wait ...." :
+                                "Login"
+                        }
+                        <Ionicons name="arrow-forward" size={16} />
                     </Text>
                 </TouchableOpacity>
 
