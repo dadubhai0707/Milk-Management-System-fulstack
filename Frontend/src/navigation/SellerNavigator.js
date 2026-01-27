@@ -5,7 +5,7 @@ const Stack = createNativeStackNavigator();
 
 export default function SellerStack() {
   return (
-    <Stack.Navigator >
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
       <Stack.Screen name="SellerDashboard" component={SellerDashboard} />
     </Stack.Navigator>
   );

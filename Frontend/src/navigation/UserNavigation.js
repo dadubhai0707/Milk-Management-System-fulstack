@@ -1,6 +1,13 @@
-import BottomTabs from "./BottomTabs";
+import AdminStack from "./AdminNavigator";
+import SellerStack from "./SellerNavigator";
+import CustomerStack from "./CustomerNavigator";
 export default function UserNavigation({ route }) {
     const { role } = route.params;
-
-    return <BottomTabs role={role} />;
+    if (role === "owner") {
+        return <AdminStack />;
+    }
+    if (role === "seller") {
+        return <SellerStack />;
+    }
+    return <CustomerStack />;
 }
