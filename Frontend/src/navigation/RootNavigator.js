@@ -6,17 +6,17 @@ import UserNavigation from "./UserNavigation";
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
-    const { isLoggedIn, role } = useSelector(state => state.auth);
+    const { isAuthenticated, user } = useSelector(state => state.auth);
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
                 <Stack.Screen name="Auth" component={AuthNavigator} />
             ) : (
                 <Stack.Screen
                     name="User"
                     component={UserNavigation}
-                    initialParams={{ role }}
+                    initialParams={{ role: user.role }}
                 />
             )}
         </Stack.Navigator>
