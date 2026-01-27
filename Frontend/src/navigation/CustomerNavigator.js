@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import CustomerDashboard from "../screens/customer/CustomerDashboard";
+import CustomerDashboard from "../screens/Customer/CustomerDashboard";
 
 const Stack = createNativeStackNavigator();
 
