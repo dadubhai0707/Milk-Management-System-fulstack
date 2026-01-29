@@ -6,8 +6,8 @@ const verifyJWT = require("../../../middleware/auth.middleware");
 const authorizeRoles = require("../../../middleware/role.middleware");
 // router.get("/", verifyJWT, getAllAddresses);
 router.get("/", getAllAddresses);
-router.post("/", verifyJWT, authorizeRoles("Owner"), createAddress);
-router.put("/:id", verifyJWT, authorizeRoles("Owner"), updateAddress);
-router.delete("/:id", verifyJWT, authorizeRoles("Owner"), deleteAddress);
+router.post("/", verifyJWT, authorizeRoles("owner"), createAddress);
+router.put("/:id", verifyJWT, authorizeRoles("owner"), updateAddress);
+router.delete("/:id", verifyJWT, authorizeRoles("owner"), deleteAddress);
 
 module.exports = router;

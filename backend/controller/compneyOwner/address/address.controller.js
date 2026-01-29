@@ -13,7 +13,7 @@ const createAddress = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Area name is required");
     }
 
-    const store = await Store.findOne({ userId: req.user._id });
+    const store = await Store?.findOne({ userId: req.user._id });
     if (!store) {
         throw new ApiError(404, "Store not found for this owner");
     }
